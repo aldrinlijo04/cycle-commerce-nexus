@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Commerce-cycle
 
 ## Project info
 
