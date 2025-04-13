@@ -1,32 +1,23 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { api } from '../services/api';
-import { Demand } from '../types';
-import { Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import { Demand } from '@/types';
+import { Search, Plus } from 'lucide-react';
+import AddDemandDialog from '@/components/demands/AddDemandDialog';
 
 const Demands: React.FC = () => {
-  const [demands, setDemands] = useState<Demand[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchDemands = async () => {
-      setIsLoading(true);
-      try {
-        const data = await api.getDemands();
-        setDemands(data);
-      } catch (error) {
-        console.error('Error fetching demands:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDemands();
-  }, []);
+  // Fetch demands with react-query
+  const { data: demands = [], isLoading } = useQuery({
+    queryKey: ['demands'],
+    queryFn: api.getDemands
+  });
 
   // Filter demands by search query
   const filteredDemands = demands.filter(demand => 
@@ -38,7 +29,10 @@ const Demands: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Active Demands</h1>
-        <Button>Add New Demand</Button>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Demand
+        </Button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-end">
@@ -101,6 +95,8 @@ const Demands: React.FC = () => {
           )}
         </div>
       )}
+      
+      <AddDemandDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { ProductCategory, Product, Supply, Demand, Exchange, User } from '../types';
 import axios from 'axios';
 
@@ -97,6 +96,16 @@ export const api = {
     } catch (error) {
       console.error(`Error fetching products for category ${categoryId}:`, error);
       return [];
+    }
+  },
+  
+  createProduct: async (product: Omit<Product, 'id'>): Promise<Product> => {
+    try {
+      const response = await apiClient.post('/products', product);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw new Error('Failed to create product');
     }
   },
   

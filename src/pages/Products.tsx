@@ -4,42 +4,32 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { api } from '../services/api';
-import { Product, ProductCategory } from '../types';
-import { Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import { Product, ProductCategory } from '@/types';
+import { Search, Plus } from 'lucide-react';
+import AddProductDialog from '@/components/products/AddProductDialog';
 
 const Products: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [productsData, categoriesData] = await Promise.all([
-          api.getProducts(),
-          api.getCategories()
-        ]);
-        
-        setProducts(productsData);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, []);
-
+  // Fetch products and categories with react-query
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.getProducts
+  });
+  
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: api.getCategories
+  });
+  
   // Filter products by search query and category
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     
     const matchesCategory = selectedCategory === 'all' || product.categoryId.toString() === selectedCategory;
     
@@ -50,7 +40,10 @@ const Products: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-        <Button>Add New Product</Button>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Product
+        </Button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-end">
@@ -85,7 +78,7 @@ const Products: React.FC = () => {
         </div>
       </div>
 
-      {isLoading ? (
+      {(isLoadingProducts || isLoadingCategories) ? (
         <div className="text-center py-10">Loading...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -117,6 +110,8 @@ const Products: React.FC = () => {
           )}
         </div>
       )}
+      
+      <AddProductDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
     </div>
   );
 };

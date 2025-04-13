@@ -1,31 +1,23 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { Exchange } from '../types';
 import { Badge } from '@/components/ui/badge';
+import { Plus } from 'lucide-react';
+import CreateExchangeDialog from '@/components/exchanges/CreateExchangeDialog';
 
 const Exchanges: React.FC = () => {
-  const [exchanges, setExchanges] = useState<Exchange[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchExchanges = async () => {
-      setIsLoading(true);
-      try {
-        const data = await api.getExchanges();
-        setExchanges(data);
-      } catch (error) {
-        console.error('Error fetching exchanges:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchExchanges();
-  }, []);
+  // Fetch exchanges with react-query
+  const { data: exchanges = [], isLoading } = useQuery({
+    queryKey: ['exchanges'],
+    queryFn: api.getExchanges
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -44,7 +36,10 @@ const Exchanges: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Exchanges</h1>
-        <Button>Create Exchange</Button>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Exchange
+        </Button>
       </div>
 
       <Card>
@@ -102,6 +97,8 @@ const Exchanges: React.FC = () => {
           <Button variant="outline" size="sm">Export Report</Button>
         </CardFooter>
       </Card>
+      
+      <CreateExchangeDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
     </div>
   );
 };
