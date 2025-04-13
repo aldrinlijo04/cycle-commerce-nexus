@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for CommerceCycle
+				cc: {
+					blue: '#1E88E5',
+					green: '#43A047',
+					amber: '#FFC107',
+					light: '#F5F7FA',
+					dark: '#263238'
 				}
 			},
 			borderRadius: {
